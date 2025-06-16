@@ -11,7 +11,7 @@ services:
     - contract_network
 
   web:
-    image: ${DOCKERHUB_USERNAME}/contract-backend:${TAG}
+    image: ${DOCKERHUB_USERNAME}/contract-service:${TAG}
     container_name: contract
     restart: always
     ports:
