@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Optional, Union
 from uuid import UUID
 
@@ -43,11 +44,17 @@ class ContractFileEditSchema(CleanableBaseModel):
 
 
 class ContractFileSchema(CleanableBaseModel):
-    id: UUID = Field(..., alias="contract_file_id")
-    name: str = Field(..., alias="contract_file_name")
+    contract_file_id: UUID = Field(...)
+    contract_file_name: str = Field(...)
+    contract_id: UUID = Field(...)
+    created_at: datetime.datetime = Field(...)
+    created_by: UUID = Field(...)
+    modified_by: UUID = Field(...)
+    modified_at: datetime.datetime = Field(...)
 
     class Config:
         from_attributes = True
+        arbitrary_types_allowed = True
         populate_by_name = True
 
 

@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, UploadFile, status
 from loguru import logger
 from tiacore_lib.handlers.dependency_handler import require_permission_in_context
-from tiacore_lib.utils.validate_helpers import validate_exists
+from tiacore_lib.utils.validate_helpers import validate_company_access, validate_exists
 from tortoise.expressions import Q
 
 from app.database.models import Contract, ContractFile
@@ -38,6 +38,13 @@ async def add_contract_file(
             размер: {len(file_bytes)} байт"""
     )
     await validate_exists(Contract, data.contract_id, "Контракт")
+    if not context["is_superadmin"]:
+        contract = await Contract.get(id=data.contract_id)
+        if str(contract.company_id) != str(context["company_id"]):
+            raise HTTPException(
+                status_code=403, detail="Вы не может добавлять файлы не в свою компанию"
+            )
+
     filename = data.file.filename or "Unknown"
     if "." in filename:
         name, extension = filename.rsplit(".", 1)
@@ -89,6 +96,7 @@ async def edit_contract_file(
     if not contract_file:
         logger.warning(f"файла контракта {contract_file_id} не найден")
         raise HTTPException(status_code=404, detail="файла контракта не найден")
+    validate_company_access(contract_file.contract, context, "файлом контракта")
     update_data = {}
     if data.file and not isinstance(data.file, UploadFile):
         raise HTTPException(status_code=400, detail="Недопустимый тип файла")
@@ -130,12 +138,17 @@ async def delete_contract_file(
     contract_file_id: UUID = Path(
         ..., title="ID файла контракта", description="ID удаляемого файла контракта"
     ),
-    _=Depends(require_permission_in_context("delete_contract_file")),
+    context=Depends(require_permission_in_context("delete_contract_file")),
 ):
-    contract_file = await ContractFile.filter(id=contract_file_id).first()
+    contract_file = (
+        await ContractFile.filter(id=contract_file_id)
+        .prefetch_related("contract")
+        .first()
+    )
     if not contract_file:
         logger.warning(f"файла контракта {contract_file_id} не найден")
         raise HTTPException(status_code=404, detail="файла контракта не найден")
+    validate_company_access(contract_file.contract, context, "файлом контракта")
     manager = AsyncS3Manager()
     await manager.delete_file(contract_file.s3_key)
     await contract_file.delete()
@@ -148,10 +161,11 @@ async def delete_contract_file(
 )
 async def get_contract_files(
     filters: dict = Depends(contract_file_filter_params),
-    _=Depends(require_permission_in_context("get_all_contract_files")),
+    context=Depends(require_permission_in_context("get_all_contract_files")),
 ):
     query = Q()
-
+    if not context["is_superadmin"]:
+        query = Q(contract__company_id=context["company_id"])
     if filters.get("contract_file_name"):
         query &= Q(name__icontains=filters["contract_file_name"])
     if filters.get("description"):
@@ -167,24 +181,26 @@ async def get_contract_files(
 
     contract_files = (
         await ContractFile.filter(query)
+        .prefetch_related("contract")
         .order_by(order_by)
         .offset((page - 1) * page_size)
         .limit(page_size)
-        .values(
-            "id",
-            "name",
-            "description",
-            "created_at",
-            "created_by",
-            "modified_at",
-            "modified_by",
-        )
+        .all()
     )
 
     return ContractFileListResponseSchema(
         total=total_count,
         contract_files=[
-            ContractFileSchema(**contract_file) for contract_file in contract_files
+            ContractFileSchema(
+                contract_file_id=contract_file.id,
+                contract_file_name=contract_file.name,
+                contract_id=contract_file.contract.id,
+                created_at=contract_file.created_at,
+                created_by=contract_file.created_by,
+                modified_at=contract_file.modified_at,
+                modified_by=contract_file.modified_by,
+            )
+            for contract_file in contract_files
         ],
     )
 
@@ -194,11 +210,12 @@ async def get_contract_files(
 )
 async def download_contract_file(
     contract_file_id: UUID,
-    _=Depends(require_permission_in_context("download_contract_file")),
+    context=Depends(require_permission_in_context("download_contract_file")),
 ):
     contract_file = await ContractFile.filter(id=contract_file_id).first()
     if not contract_file:
         raise HTTPException(status_code=404, detail="Файл контракта не найден")
+    validate_company_access(contract_file.contract, context, "файлом контракта")
     manager = AsyncS3Manager()
     url = await manager.generate_presigned_url(contract_file.s3_key)
     return {"url": url}
@@ -215,28 +232,29 @@ async def get_contract_file(
         title="ID файла контракта",
         description="ID просматриваемой файла контракта",
     ),
-    _=Depends(require_permission_in_context("view_contract_file")),
+    context=Depends(require_permission_in_context("view_contract_file")),
 ):
     logger.info(f"Запрос на просмотр файла контракта: {contract_file_id}")
     contract_file = (
         await ContractFile.filter(id=contract_file_id)
+        .prefetch_related("contract")
         .first()
-        .values(
-            "id",
-            "name",
-            "description",
-            "created_at",
-            "created_by",
-            "modified_at",
-            "modified_by",
-        )
     )
 
     if contract_file is None:
         logger.warning(f"файла контракта {contract_file_id} не найдена")
         raise HTTPException(status_code=404, detail="файла контракта не найдена")
+    validate_company_access(contract_file.contract, context, "файлом контракта")
 
-    contract_file_schema = ContractFileSchema(**contract_file)
+    contract_file_schema = ContractFileSchema(
+        contract_file_id=contract_file.id,
+        contract_file_name=contract_file.name,
+        contract_id=contract_file.contract.id,
+        created_at=contract_file.created_at,
+        created_by=contract_file.created_by,
+        modified_at=contract_file.modified_at,
+        modified_by=contract_file.modified_by,
+    )
 
     logger.success(f"файла контракта найдена: {contract_file_schema}")
     return contract_file_schema

@@ -3,7 +3,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from tiacore_lib.handlers.dependency_handler import require_permission_in_context
-from tiacore_lib.utils.validate_helpers import validate_exists
+from tiacore_lib.handlers.permissions_handler import (
+    with_permission_and_company_from_body_check,
+)
+from tiacore_lib.utils.validate_helpers import validate_company_access, validate_exists
 from tortoise.expressions import Q
 
 from app.database.models import (
@@ -30,7 +33,7 @@ contract_router = APIRouter()
 )
 async def add_contract(
     data: ContractCreateSchema,
-    context=Depends(require_permission_in_context("add_contract")),
+    context=Depends(with_permission_and_company_from_body_check("add_contract")),
 ):
     await validate_exists(ContractType, data.contract_type_id, "Тип Контракта")
 
@@ -50,12 +53,12 @@ async def add_contract(
 async def update_contract(
     contract_id: UUID,
     data: ContractEditSchema,
-    context=Depends(require_permission_in_context("edit_contract")),
+    context=Depends(with_permission_and_company_from_body_check("edit_contract")),
 ):
     contract = await Contract.filter(id=contract_id).first()
     if not contract:
         raise HTTPException(status_code=404, detail="контракт не найден")
-
+    validate_company_access(contract, context, "контрактом")
     update_data = data.model_dump(exclude_unset=True)
 
     if "contract_type_id" in update_data:
@@ -74,12 +77,12 @@ async def update_contract(
 )
 async def delete_contract(
     contract_id: UUID,
-    _=Depends(require_permission_in_context("delete_contract")),
+    context=Depends(require_permission_in_context("delete_contract")),
 ):
     contract = await Contract.filter(id=contract_id).first()
     if not contract:
         raise HTTPException(status_code=404, detail="контракт не найден")
-
+    validate_company_access(contract, context, "контрактом")
     await contract.delete()
     return
 
@@ -91,10 +94,11 @@ async def delete_contract(
 )
 async def get_contracts(
     filters: dict = Depends(Contract_filter_params),
-    _: dict = Depends(require_permission_in_context("get_all_contracts")),
+    context: dict = Depends(require_permission_in_context("get_all_contracts")),
 ):
     query = Q()
-
+    if not context["is_superadmin"]:
+        query &= Q(company_id=context["company_id"])
     if filters.get("contract_name"):
         query &= Q(name__icontains=filters["contract_name"])
 
@@ -159,7 +163,7 @@ async def get_contracts(
 )
 async def get_contract(
     contract_id: UUID,
-    _: dict = Depends(require_permission_in_context("view_contract")),
+    context: dict = Depends(require_permission_in_context("view_contract")),
 ):
     contract = (
         await Contract.filter(id=contract_id).prefetch_related("contract_type").first()
@@ -167,6 +171,7 @@ async def get_contract(
 
     if not contract:
         raise HTTPException(status_code=404, detail="контракт не найден")
+    validate_company_access(contract, context, "контрактом")
 
     return ContractSchema(
         contract_id=contract.id,
