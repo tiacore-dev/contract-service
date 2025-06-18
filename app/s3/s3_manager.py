@@ -1,4 +1,5 @@
 import os
+import re
 
 import aioboto3
 from botocore.exceptions import ClientError
@@ -23,6 +24,12 @@ class AsyncS3Manager:
     def _get_session(self):
         return aioboto3.Session()
 
+    def _normalize_filename(self, filename: str) -> str:
+        filename = filename.strip()
+        filename = filename.replace(" ", "_")
+        filename = re.sub(r"[^\w.\-]", "", filename)
+        return filename
+
     def _build_path(self, contract_id: str, filename: str) -> str:
         return f"{self.bucket_folder}/{contract_id}/{filename}"
 
@@ -37,6 +44,7 @@ class AsyncS3Manager:
         )
 
     async def upload_bytes(self, file_bytes: bytes, contract_id: str, filename: str):
+        filename = self._normalize_filename(filename)
         key = self._build_path(contract_id, filename)
 
         async with self._get_client() as s3:  # type: ignore[attr-defined]
