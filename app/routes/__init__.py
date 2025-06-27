@@ -20,4 +20,4 @@ def register_routes(app: FastAPI):
     app.include_router(
         contract_type_router, prefix="/api/contract-types", tags=["ContractTypes"]
     )
-    app.include_router(contract_router, prefix="/api/contracts", tags=["LegalEntities"])
+    app.include_router(contract_router, prefix="/api/contracts", tags=["Contracts"])
