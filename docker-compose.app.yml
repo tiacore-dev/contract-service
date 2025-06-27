@@ -3,7 +3,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis-contract
+    container_name: redis-contract-${CONFIG_NAME}
     ports:
       - "6380:6379"
     restart: always
@@ -12,7 +12,7 @@ services:
 
   web:
     image: ${DOCKERHUB_USERNAME}/contract-service:${TAG}
-    container_name: contract
+    container_name: contract-service-${CONFIG_NAME}
     restart: always
     ports:
       - "${PORT}:8000"
