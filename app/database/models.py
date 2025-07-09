@@ -23,9 +23,7 @@ class Contract(Model):
     company_id = fields.UUIDField()
     responsible_id = fields.UUIDField()
 
-    contract_type = fields.ForeignKeyField(
-        "models.ContractType", related_name="contracts"
-    )
+    contract_type = fields.ForeignKeyField("models.ContractType", related_name="contracts")
 
     created_at = fields.DatetimeField(auto_now_add=True)
     created_by = fields.UUIDField()
@@ -50,3 +48,15 @@ class ContractFile(Model):
 
     class Meta:
         table = "contract_files"
+
+
+class EntityCompanyRelation(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    company_id = fields.UUIDField()
+    legal_entity_id = fields.UUIDField()
+    relation_type = fields.CharField(max_length=10)
+    description = fields.TextField(null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "entity_company_relations"
