@@ -34,6 +34,14 @@ CREATE TABLE IF NOT EXISTS "contract_files" (
     "modified_by" UUID NOT NULL,
     "contract_id" UUID NOT NULL REFERENCES "contracts" ("id") ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS "entity_company_relations" (
+    "id" UUID NOT NULL PRIMARY KEY,
+    "company_id" UUID NOT NULL,
+    "legal_entity_id" UUID NOT NULL,
+    "relation_type" VARCHAR(10) NOT NULL,
+    "description" TEXT,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 CREATE TABLE IF NOT EXISTS "aerich" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "version" VARCHAR(255) NOT NULL,
