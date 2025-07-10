@@ -42,6 +42,7 @@ class AsyncS3Manager:
             region_name=self.region_name,
             aws_access_key_id=self.aws_access_key_id,
             aws_secret_access_key=self.aws_secret_access_key,
+            use_ssl=True,
         )
 
     async def upload_bytes(self, file_bytes: bytes, contract_id: str, filename: str, content_type):
