@@ -12,7 +12,7 @@ text.txt
 
 celery_docker
 docker-compose.dev.yml
-
+.vscode
 
 audio_files_examples/
 

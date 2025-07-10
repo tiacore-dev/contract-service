@@ -33,6 +33,8 @@ async def add_contract_file(
     file_bytes = await data.file.read()
     if not file_bytes:
         raise HTTPException(status_code=400, detail="Не удалось загрузить данные файла")
+    assert isinstance(file_bytes, bytes), f"Неверный тип: {type(file_bytes)}"
+
     logger.info(
         f"""Тип загружаемых данных: {type(file_bytes)}, 
             размер: {len(file_bytes)} байт"""
