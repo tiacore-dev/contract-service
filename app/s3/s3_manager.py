@@ -1,5 +1,6 @@
 import os
 import re
+from io import BytesIO
 
 import aioboto3
 from botocore.exceptions import ClientError
@@ -52,7 +53,7 @@ class AsyncS3Manager:
                 await s3.put_object(
                     Bucket=self.bucket_name,
                     Key=key,
-                    Body=file_bytes,
+                    Body=BytesIO(file_bytes),
                     ACL="private",
                     ContentLength=len(file_bytes),
                     ContentType=content_type,
