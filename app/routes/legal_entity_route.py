@@ -129,7 +129,9 @@ async def get_legal_entities(
     if not context["is_superadmin"]:
         query_params["company_id"] = str(context["company_id"])
 
-        legal_entity_ids = await EntityCompanyRelation.filter(company_id=context["company_id"]).values_list("legal_entity_id", flat=True)
+        legal_entity_ids = await EntityCompanyRelation.filter(company_id=context["company_id"]).values_list(
+            "legal_entity_id", flat=True
+        )
         response_data, status_code = await http_client.request(
             "POST",
             f"{settings.REFERENCE_URL}/api/legal-entities/by-ids",
@@ -159,11 +161,18 @@ async def get_buyers(
     settings=Depends(get_settings),
 ):
     if context["is_superadmin"]:
-        related_entity_ids = await EntityCompanyRelation.filter(relation_type="buyer").values_list("legal_entity_id", flat=True)
+        if context.get("company_id"):
+            related_entity_ids = await EntityCompanyRelation.filter(
+                relation_type="buyer", company_id=context["company_id"]
+            ).values_list("legal_entity_id", flat=True)
+        else:
+            related_entity_ids = await EntityCompanyRelation.filter(relation_type="buyer").values_list(
+                "legal_entity_id", flat=True
+            )
     else:
-        related_entity_ids = await EntityCompanyRelation.filter(relation_type="buyer", company_id=context["company_id"]).values_list(
-            "legal_entity_id", flat=True
-        )
+        related_entity_ids = await EntityCompanyRelation.filter(
+            relation_type="buyer", company_id=context["company_id"]
+        ).values_list("legal_entity_id", flat=True)
     if not related_entity_ids:
         return LegalEntityListResponseSchema(total=0, entities=[])
 
@@ -190,9 +199,19 @@ async def get_sellers(
     context: dict = Depends(require_permission_in_context("get_sellers")),
     settings=Depends(get_settings),
 ):
-    related_entity_ids = await EntityCompanyRelation.filter(company_id=context["company_id"], relation_type="seller").values_list(
-        "legal_entity_id", flat=True
-    )
+    if context["is_superadmin"]:
+        if context.get("company_id"):
+            related_entity_ids = await EntityCompanyRelation.filter(
+                relation_type="seller", company_id=context["company_id"]
+            ).values_list("legal_entity_id", flat=True)
+        else:
+            related_entity_ids = await EntityCompanyRelation.filter(relation_type="seller").values_list(
+                "legal_entity_id", flat=True
+            )
+    else:
+        related_entity_ids = await EntityCompanyRelation.filter(
+            relation_type="seller", company_id=context["company_id"]
+        ).values_list("legal_entity_id", flat=True)
     logger.debug(f"related_entity_ids: {related_entity_ids}")
 
     if not related_entity_ids:
@@ -223,7 +242,9 @@ async def get_by_company(
     settings=Depends(get_settings),
 ):
     # Получаем все id юр. лиц, у которых relation_type == buyer
-    legal_entity_ids = await EntityCompanyRelation.filter(company_id=company_id).values_list("legal_entity_id", flat=True)
+    legal_entity_ids = await EntityCompanyRelation.filter(company_id=company_id).values_list(
+        "legal_entity_id", flat=True
+    )
 
     if not legal_entity_ids:
         return LegalEntityListResponseSchema(total=0, entities=[])
