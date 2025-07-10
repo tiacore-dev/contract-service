@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from loguru import logger
 from tiacore_lib.handlers.dependency_handler import require_permission_in_context
 from tiacore_lib.utils.validate_helpers import validate_company_access, validate_exists
@@ -89,8 +89,7 @@ async def edit_contract_file(
         raise HTTPException(status_code=404, detail="файла контракта не найден")
     validate_company_access(contract_file.contract, context, "файлом контракта")
     update_data = {}
-    if data.file and not isinstance(data.file, UploadFile):
-        raise HTTPException(status_code=400, detail="Недопустимый тип файла")
+
     if data.contract_id:
         contract_id = data.contract_id
         update_data["contract_id"] = contract_id
