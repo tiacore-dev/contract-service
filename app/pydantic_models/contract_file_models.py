@@ -9,19 +9,16 @@ from tiacore_lib.utils.validate_helpers import normalize_form_field
 
 
 class ContractFileCreateSchema(CleanableBaseModel):
-    contract_file_name: str
     file: UploadFile
     contract_id: UUID
 
     @classmethod
     def as_form(
         cls,
-        contract_file_name: str = Form(..., min_length=3, max_length=100),
         contract_id: UUID = Form(...),
         file: UploadFile = File(...),
     ):
         return cls(
-            contract_file_name=contract_file_name,
             contract_id=contract_id,
             file=file,
         )
