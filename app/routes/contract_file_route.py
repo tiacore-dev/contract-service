@@ -176,7 +176,7 @@ async def get_contract_files(
         contract_files=[
             ContractFileSchema(
                 contract_file_id=contract_file.id,
-                contract_file_name=contract_file.name,
+                contract_file_name=f"{contract_file.name}.{contract_file.extension}",
                 contract_id=contract_file.contract.id,
                 created_at=contract_file.created_at,
                 created_by=contract_file.created_by,
@@ -225,7 +225,7 @@ async def get_contract_file(
 
     contract_file_schema = ContractFileSchema(
         contract_file_id=contract_file.id,
-        contract_file_name=contract_file.name,
+        contract_file_name=f"{contract_file.name}.{contract_file.extension}",
         contract_id=contract_file.contract.id,
         created_at=contract_file.created_at,
         created_by=contract_file.created_by,
