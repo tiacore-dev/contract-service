@@ -68,9 +68,7 @@ class ContractFileListResponseSchema(CleanableBaseModel):
 
 
 def contract_file_filter_params(
-    contract_file_name: Optional[str] = Query(
-        None, description="Фильтр по названию промпта"
-    ),
+    contract_file_name: Optional[str] = Query(None, description="Фильтр по названию промпта"),
     sort_by: Optional[str] = Query("name", description="Поле сортировки"),
     order: Optional[str] = Query("asc", description="asc / desc"),
     page: Optional[int] = Query(1, ge=1),

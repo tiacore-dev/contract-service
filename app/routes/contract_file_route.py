@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Path, UploadFile, status
 from loguru import logger
 from tiacore_lib.handlers.dependency_handler import require_permission_in_context
 from tiacore_lib.utils.validate_helpers import validate_company_access, validate_exists
@@ -27,7 +27,7 @@ contract_file_router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def add_contract_file(
-    data: ContractFileCreateSchema = Body(...),
+    data: ContractFileCreateSchema = Depends(ContractFileCreateSchema.as_form),
     context=Depends(require_permission_in_context("add_contract_file")),
 ):
     file_bytes = await data.file.read()
@@ -41,9 +41,7 @@ async def add_contract_file(
     if not context["is_superadmin"]:
         contract = await Contract.get(id=data.contract_id)
         if str(contract.company_id) != str(context["company_id"]):
-            raise HTTPException(
-                status_code=403, detail="Вы не может добавлять файлы не в свою компанию"
-            )
+            raise HTTPException(status_code=403, detail="Вы не может добавлять файлы не в свою компанию")
 
     filename = data.file.filename or "Unknown"
     if "." in filename:
@@ -64,13 +62,9 @@ async def add_contract_file(
     )
     if not contract_file:
         logger.error("Не удалось создать файла контракта")
-        raise HTTPException(
-            status_code=500, detail="Не удалось создать файла контракта"
-        )
+        raise HTTPException(status_code=500, detail="Не удалось создать файла контракта")
 
-    logger.success(
-        f"файла контракта {contract_file.name} ({contract_file.id}) успешно создан"
-    )
+    logger.success(f"файла контракта {contract_file.name} ({contract_file.id}) успешно создан")
     return ContractFileResponseSchema(contract_file_id=contract_file.id)
 
 
@@ -80,19 +74,13 @@ async def add_contract_file(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def edit_contract_file(
-    contract_file_id: UUID = Path(
-        ..., title="ID файла контракта", description="ID изменяемого файла контракта"
-    ),
-    data: ContractFileEditSchema = Body(...),
+    contract_file_id: UUID = Path(..., title="ID файла контракта", description="ID изменяемого файла контракта"),
+    data: ContractFileEditSchema = Depends(ContractFileEditSchema.as_form),
     context=Depends(require_permission_in_context("edit_contract_file")),
 ):
     logger.info(f"Обновление файла контракта {contract_file_id}")
 
-    contract_file = (
-        await ContractFile.filter(id=contract_file_id)
-        .prefetch_related("contract")
-        .first()
-    )
+    contract_file = await ContractFile.filter(id=contract_file_id).prefetch_related("contract").first()
     if not contract_file:
         logger.warning(f"файла контракта {contract_file_id} не найден")
         raise HTTPException(status_code=404, detail="файла контракта не найден")
@@ -135,16 +123,10 @@ async def edit_contract_file(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_contract_file(
-    contract_file_id: UUID = Path(
-        ..., title="ID файла контракта", description="ID удаляемого файла контракта"
-    ),
+    contract_file_id: UUID = Path(..., title="ID файла контракта", description="ID удаляемого файла контракта"),
     context=Depends(require_permission_in_context("delete_contract_file")),
 ):
-    contract_file = (
-        await ContractFile.filter(id=contract_file_id)
-        .prefetch_related("contract")
-        .first()
-    )
+    contract_file = await ContractFile.filter(id=contract_file_id).prefetch_related("contract").first()
     if not contract_file:
         logger.warning(f"файла контракта {contract_file_id} не найден")
         raise HTTPException(status_code=404, detail="файла контракта не найден")
@@ -171,9 +153,7 @@ async def get_contract_files(
     if filters.get("description"):
         query &= Q(description__icontains=filters["description"])
 
-    order_by = f"{'-' if filters.get('order') == 'desc' else ''}{
-        filters.get('sort_by', 'name')
-    }"
+    order_by = f"{'-' if filters.get('order') == 'desc' else ''}{filters.get('sort_by', 'name')}"
     page = filters.get("page", 1)
     page_size = filters.get("page_size", 10)
 
@@ -205,9 +185,7 @@ async def get_contract_files(
     )
 
 
-@contract_file_router.get(
-    "/{contract_file_id}/download", summary="Скачивание файла контракта"
-)
+@contract_file_router.get("/{contract_file_id}/download", summary="Скачивание файла контракта")
 async def download_contract_file(
     contract_file_id: UUID,
     context=Depends(require_permission_in_context("download_contract_file")),
@@ -235,11 +213,7 @@ async def get_contract_file(
     context=Depends(require_permission_in_context("view_contract_file")),
 ):
     logger.info(f"Запрос на просмотр файла контракта: {contract_file_id}")
-    contract_file = (
-        await ContractFile.filter(id=contract_file_id)
-        .prefetch_related("contract")
-        .first()
-    )
+    contract_file = await ContractFile.filter(id=contract_file_id).prefetch_related("contract").first()
 
     if contract_file is None:
         logger.warning(f"файла контракта {contract_file_id} не найдена")
