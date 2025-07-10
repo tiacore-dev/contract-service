@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from tiacore_lib.routes.company_route import company_router
 from tiacore_lib.routes.user_route import user_router
 
+from .contract_file_route import contract_file_router
 from .contract_route import contract_router
 from .contract_type_route import contract_type_router
 from .entity_company_relation_route import entity_relation_router
@@ -15,6 +16,7 @@ def register_routes(app: FastAPI):
     app.include_router(monitoring_router, tags=["Monitoring"])
     app.include_router(contract_type_router, prefix="/api/contract-types", tags=["ContractTypes"])
     app.include_router(contract_router, prefix="/api/contracts", tags=["Contracts"])
+    app.include_router(contract_file_router, prefix="/api/contract-files", tags=["ContractFiles"])
     app.include_router(entity_router, prefix="/api/legal-entities", tags=["LegalEntities"])
     app.include_router(
         entity_relation_router,
