@@ -43,13 +43,20 @@ class AsyncS3Manager:
             aws_secret_access_key=self.aws_secret_access_key,
         )
 
-    async def upload_bytes(self, file_bytes: bytes, contract_id: str, filename: str):
+    async def upload_bytes(self, file_bytes: bytes, contract_id: str, filename: str, content_type):
         filename = self._normalize_filename(filename)
         key = self._build_path(contract_id, filename)
 
         async with self._get_client() as s3:  # type: ignore[attr-defined]
             try:
-                await s3.put_object(Bucket=self.bucket_name, Key=key, Body=file_bytes, ACL="private")
+                await s3.put_object(
+                    Bucket=self.bucket_name,
+                    Key=key,
+                    Body=file_bytes,
+                    ACL="private",
+                    ContentLength=len(file_bytes),
+                    ContentType=content_type,
+                )
                 logger.info(f"✅ Файл загружен: {key}")
                 return key
             except ClientError as e:

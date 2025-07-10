@@ -53,7 +53,8 @@ async def add_contract_file(
 
     manager = AsyncS3Manager()
     contract_id = data.contract_id
-    s3_key = await manager.upload_bytes(file_bytes, str(contract_id), filename)
+    content_type = data.file.content_type or "application/octet-stream"
+    s3_key = await manager.upload_bytes(file_bytes, str(contract_id), filename, content_type)
     contract_file = await ContractFile.create(
         contract_id=contract_id,
         s3_key=s3_key,
@@ -109,7 +110,8 @@ async def edit_contract_file(
         contract_id_str = str(contract_id)
 
         await manager.delete_file(contract_file.s3_key)
-        new_s3_key = await manager.upload_bytes(file_bytes, contract_id_str, filename)
+        content_type = data.file.content_type or "application/octet-stream"
+        new_s3_key = await manager.upload_bytes(file_bytes, contract_id_str, filename, content_type)
         update_data["s3_key"] = new_s3_key
         update_data["name"] = name
         update_data["extension"] = extension
