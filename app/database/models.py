@@ -43,7 +43,7 @@ class ContractFile(Model):
 
     created_at = fields.DatetimeField(auto_now_add=True)
     created_by = fields.UUIDField()
-    modified_at = fields.DatetimeField(auto_nowd=True)
+    modified_at = fields.DatetimeField(auto_now=True)
     modified_by = fields.UUIDField()
 
     class Meta:
