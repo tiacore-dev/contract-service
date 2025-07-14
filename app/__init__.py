@@ -46,18 +46,14 @@ def create_app(config_name: ConfigName) -> FastAPI:
                 queue_name="contract-service",
                 routing_keys=["user.*"],
             )
-            task = asyncio.create_task(
-                consumer.connect_and_consume(
-                    partial(handle_user_event, settings=settings)
-                )
-            )
+            task = asyncio.create_task(consumer.connect_and_consume(partial(handle_user_event, settings=settings)))
             app.state.rabbit_task = task
 
         yield
 
         await Tortoise.close_connections()
 
-    app = FastAPI(title="contract", redirect_slashes=False, lifespan=lifespan)
+    app = FastAPI(title="Contract Service", redirect_slashes=False, lifespan=lifespan)
     app.dependency_overrides[get_settings] = provide_settings(config_name)
     setup_logger()
 
