@@ -11,8 +11,7 @@ ARG LIB_REPO_TOKEN
 ARG CACHE_BUSTER=1
 # Чтобы ARG была доступна на этом слое
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install git+https://x-access-token:${LIB_REPO_TOKEN}@github.com/tiacore-dev/tiacore-lib.git@master
- #${CACHE_BUSTER}
+    pip install git+https://x-access-token:${LIB_REPO_TOKEN}@github.com/tiacore-dev/tiacore-lib.git@master#${CACHE_BUSTER}
 
 
 
