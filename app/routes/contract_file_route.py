@@ -149,12 +149,15 @@ async def get_contract_files(
     context=Depends(require_permission_in_context("get_all_contract_files")),
 ):
     query = Q()
-    if not context["is_superadmin"]:
-        query = Q(contract__company_id=context["company_id"])
+    if filters["company_id"]:
+        query = Q(company_id=filters["company_id"])
     if filters.get("contract_file_name"):
         query &= Q(name__icontains=filters["contract_file_name"])
     if filters.get("description"):
         query &= Q(description__icontains=filters["description"])
+
+    if filters.get("contract_id"):
+        query &= Q(contract_id=filters["contract_id"])
 
     order_by = f"{'-' if filters.get('order') == 'desc' else ''}{filters.get('sort_by', 'name')}"
     page = filters.get("page", 1)
