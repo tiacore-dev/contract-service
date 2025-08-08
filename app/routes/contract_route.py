@@ -113,11 +113,10 @@ async def get_contracts(
             parsed_date = datetime.datetime.strptime(filters["date"], "%Y-%m-%d").date()
             query &= Q(date=parsed_date)
         except ValueError:
-            raise HTTPException(
-                status_code=400, detail="Некорректная дата (ожидается YYYY-MM-DD)"
-            )
+            raise HTTPException(status_code=400, detail="Некорректная дата (ожидается YYYY-MM-DD)")
 
     sort_by = filters["sort_by"]
+
     order = filters["order"]
     ordering = f"-{sort_by}" if order == "desc" else sort_by
 
@@ -165,9 +164,7 @@ async def get_contract(
     contract_id: UUID,
     context: dict = Depends(require_permission_in_context("view_contract")),
 ):
-    contract = (
-        await Contract.filter(id=contract_id).prefetch_related("contract_type").first()
-    )
+    contract = await Contract.filter(id=contract_id).prefetch_related("contract_type").first()
 
     if not contract:
         raise HTTPException(status_code=404, detail="контракт не найден")

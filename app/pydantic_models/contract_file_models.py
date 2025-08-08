@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 from uuid import UUID
 
 from fastapi import File, Form, Query, UploadFile
@@ -67,8 +67,8 @@ class ContractFileListResponseSchema(CleanableBaseModel):
 def contract_file_filter_params(
     contract_file_name: Optional[str] = Query(None, description="Фильтр по названию промпта"),
     contract_id: Optional[UUID] = Query(None, description="Фильтр по id котракта"),
-    sort_by: Optional[str] = Query("name", description="Поле сортировки"),
-    order: Optional[str] = Query("asc", description="asc / desc"),
+    sort_by: Literal["name", "created_at"] = Query("name", description="Поле сортировки"),
+    order: Literal["asc", "desc"] = Query("asc", description="asc/desc"),
     page: Optional[int] = Query(1, ge=1),
     page_size: Optional[int] = Query(10, ge=1, le=100),
 ):

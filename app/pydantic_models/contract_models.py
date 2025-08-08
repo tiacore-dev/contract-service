@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import Query
@@ -23,9 +23,7 @@ class ContractCreateSchema(CleanableBaseModel):
 
 
 class ContractEditSchema(CleanableBaseModel):
-    name: Optional[str] = Field(
-        None, min_length=3, max_length=100, alias="contract_name"
-    )
+    name: Optional[str] = Field(None, min_length=3, max_length=100, alias="contract_name")
     number: Optional[str] = Field(None, alias="contract_number")
     date: Optional[datetime.date] = Field(None)
     buyer_id: Optional[UUID] = Field(None)
@@ -69,13 +67,11 @@ class ContractListResponseSchema(CleanableBaseModel):
 
 
 def Contract_filter_params(
-    contract_name: Optional[str] = Query(
-        None, description="Фильтр по названию промпта"
-    ),
+    contract_name: Optional[str] = Query(None, description="Фильтр по названию промпта"),
     contract_number: Optional[str] = Query(None, description="Фильтр по тексту"),
     date: Optional[str] = Query(None, description="Фильтр по тексту"),
-    sort_by: Optional[str] = Query("name", description="Поле сортировки"),
-    order: Optional[str] = Query("asc", description="asc / desc"),
+    sort_by: Literal["created_at", "name"] = Query("name", description="Поле сортировки"),
+    order: Literal["asc", "desc"] = Query("asc", description="asc/desc"),
     page: Optional[int] = Query(1, ge=1),
     page_size: Optional[int] = Query(10, ge=1, le=100),
 ):

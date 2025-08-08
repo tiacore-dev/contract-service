@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import Query
 from pydantic import Field
@@ -23,7 +23,7 @@ class ContractTypeListResponse(CleanableBaseModel):
 # ✅ Фильтры и параметры поиска
 class FilterParams(CleanableBaseModel):
     contract_type_name: Optional[str] = Query(None, description="Фильтр по названию")
-    sort_by: str = Query("name", description="Сортировка (по умолчанию name)")
-    order: str = Query("asc", description="Порядок сортировки: asc/desc")
+    sort_by: Literal["name", "created_at"] = Query("name", description="Сортировка (по умолчанию name)")
+    order: Literal["asc", "desc"] = Query("asc", description="Порядок сортировки: asc/desc")
     page: int = Query(1, description="Номер страницы")
     page_size: int = Query(10, description="Размер страницы")
