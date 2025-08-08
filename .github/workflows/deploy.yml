@@ -208,7 +208,7 @@ jobs:
 
           ESCAPED_COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed -E 's/([*_`\[\]()])/\\\1/g')
           TEXT="${STATUS}
-
+          Contract Service
           📦 *Ветка:* \`$REF_NAME\`
           🔖 *Тег:* \`$SHA\`
           👤 *Автор деплоя:* [$AUTHOR_USERNAME](https://github.com/$AUTHOR_USERNAME)
