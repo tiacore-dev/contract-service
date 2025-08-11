@@ -99,6 +99,8 @@ async def get_contracts(
     query = Q()
     if not context["is_superadmin"]:
         query &= Q(company_id=context["company_id"])
+    if filters.get("price_set_id"):
+        query &= Q(price_set_id=filters.get("price_set_id"))
     if filters.get("contract_name"):
         query &= Q(name__icontains=filters["contract_name"])
 
@@ -133,24 +135,7 @@ async def get_contracts(
         .prefetch_related("contract_type")
     )
 
-    contract_list = [
-        ContractSchema(
-            contract_id=contract.id,
-            contract_name=contract.name,
-            contract_number=contract.number,
-            date=contract.date,
-            buyer_id=contract.buyer_id,
-            seller_id=contract.seller_id,
-            contract_type_id=contract.contract_type.id,
-            company_id=contract.company_id,
-            responsible_id=contract.responsible_id,
-            modified_by=contract.modified_by,
-            modified_at=contract.modified_at,
-            created_at=contract.created_at,
-            created_by=contract.created_by,
-        )
-        for contract in contracts
-    ]
+    contract_list = [ContractSchema.model_validate(contract) for contract in contracts]
 
     return ContractListResponseSchema(total=total, contracts=contract_list)
 
@@ -170,18 +155,4 @@ async def get_contract(
         raise HTTPException(status_code=404, detail="контракт не найден")
     validate_company_access(contract, context, "контрактом")
 
-    return ContractSchema(
-        contract_id=contract.id,
-        contract_name=contract.name,
-        contract_number=contract.number,
-        date=contract.date,
-        buyer_id=contract.buyer_id,
-        seller_id=contract.seller_id,
-        contract_type_id=contract.contract_type.id,
-        company_id=contract.company_id,
-        responsible_id=contract.responsible_id,
-        modified_by=contract.modified_by,
-        modified_at=contract.modified_at,
-        created_at=contract.created_at,
-        created_by=contract.created_by,
-    )
+    return ContractSchema.model_validate(contract)

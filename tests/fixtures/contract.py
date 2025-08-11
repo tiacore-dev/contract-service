@@ -9,9 +9,7 @@ from app.database.models import Contract, ContractType
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
 async def seed_contract_type():
-    contract_type = await ContractType.create(
-        id="delivery", name="Test Name", colour="#ffffff"
-    )
+    contract_type = await ContractType.create(id="delivery", name="Test Name", colour="#ffffff")
     return contract_type
 
 
@@ -21,6 +19,7 @@ async def seed_contract(seed_contract_type: ContractType):
     contract = await Contract.create(
         name="Test contract",
         number="11111",
+        price_set_id=uuid4(),
         contract_type=seed_contract_type,
         date=datetime.date.today(),
         buyer_id=uuid4(),

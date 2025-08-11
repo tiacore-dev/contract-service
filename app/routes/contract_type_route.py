@@ -39,12 +39,8 @@ async def get_contract_types(
     total_count = await ContractType.filter(query).count()
 
     contract_types = [
-        ContractTypeSchema(**p)
-        for p in await ContractType.filter(query)
-        .order_by(order_by)
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .values("id", "name", "colour")
+        ContractTypeSchema.model_validate(p)
+        for p in await ContractType.filter(query).order_by(order_by).offset((page - 1) * page_size).limit(page_size)
     ]
 
     if not contract_types:

@@ -3,13 +3,13 @@ from typing import List, Literal, Optional
 from uuid import UUID
 
 from fastapi import Query
-from pydantic import Field
-from tiacore_lib.pydantic_models.clean_model import CleanableBaseModel
+from pydantic import BaseModel, Field
 
 
-class ContractCreateSchema(CleanableBaseModel):
+class ContractCreateSchema(BaseModel):
     name: str = Field(..., min_length=3, max_length=100, alias="contract_name")
     number: str = Field(..., alias="contract_number")
+    price_set_id: Optional[UUID] = Field(None)
     date: datetime.date = Field(...)
     buyer_id: UUID = Field(...)
     seller_id: UUID = Field(...)
@@ -22,8 +22,9 @@ class ContractCreateSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class ContractEditSchema(CleanableBaseModel):
+class ContractEditSchema(BaseModel):
     name: Optional[str] = Field(None, min_length=3, max_length=100, alias="contract_name")
+    price_set_id: Optional[UUID] = Field(None)
     number: Optional[str] = Field(None, alias="contract_number")
     date: Optional[datetime.date] = Field(None)
     buyer_id: Optional[UUID] = Field(None)
@@ -37,10 +38,11 @@ class ContractEditSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class ContractSchema(CleanableBaseModel):
+class ContractSchema(BaseModel):
     id: UUID = Field(..., alias="contract_id")
     name: str = Field(..., alias="contract_name")
     number: str = Field(..., alias="contract_number")
+    price_set_id: Optional[UUID] = Field(None)
     date: datetime.date = Field(...)
     buyer_id: UUID = Field(...)
     seller_id: UUID = Field(...)
@@ -57,11 +59,11 @@ class ContractSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class ContractResponseSchema(CleanableBaseModel):
+class ContractResponseSchema(BaseModel):
     contract_id: UUID
 
 
-class ContractListResponseSchema(CleanableBaseModel):
+class ContractListResponseSchema(BaseModel):
     total: int
     contracts: List[ContractSchema]
 
@@ -69,6 +71,7 @@ class ContractListResponseSchema(CleanableBaseModel):
 def Contract_filter_params(
     contract_name: Optional[str] = Query(None, description="Фильтр по названию промпта"),
     contract_number: Optional[str] = Query(None, description="Фильтр по тексту"),
+    price_set_id: Optional[UUID] = Query(None, description="ID набора цен"),
     date: Optional[str] = Query(None, description="Фильтр по тексту"),
     sort_by: Literal["created_at", "name"] = Query("name", description="Поле сортировки"),
     order: Literal["asc", "desc"] = Query("asc", description="asc/desc"),
@@ -78,6 +81,7 @@ def Contract_filter_params(
     return {
         "contract_name": contract_name,
         "contract_number": contract_number,
+        "price_set_id": price_set_id,
         "date": date,
         "sort_by": sort_by,
         "order": order,

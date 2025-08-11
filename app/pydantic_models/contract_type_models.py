@@ -1,11 +1,10 @@
 from typing import List, Literal, Optional
 
 from fastapi import Query
-from pydantic import Field
-from tiacore_lib.pydantic_models.clean_model import CleanableBaseModel
+from pydantic import BaseModel, Field
 
 
-class ContractTypeSchema(CleanableBaseModel):
+class ContractTypeSchema(BaseModel):
     id: str = Field(..., alias="contract_type_id")
     name: str = Field(..., alias="contract_type_name")
     colour: str = Field(..., min_length=7, max_length=7)
@@ -15,13 +14,13 @@ class ContractTypeSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class ContractTypeListResponse(CleanableBaseModel):
+class ContractTypeListResponse(BaseModel):
     total: int
     contract_types: List[ContractTypeSchema]
 
 
 # ✅ Фильтры и параметры поиска
-class FilterParams(CleanableBaseModel):
+class FilterParams(BaseModel):
     contract_type_name: Optional[str] = Query(None, description="Фильтр по названию")
     sort_by: Literal["name", "created_at"] = Query("name", description="Сортировка (по умолчанию name)")
     order: Literal["asc", "desc"] = Query("asc", description="Порядок сортировки: asc/desc")

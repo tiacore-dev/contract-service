@@ -4,11 +4,11 @@ from uuid import UUID
 
 from fastapi import File, Form, Query, UploadFile
 from pydantic import Field
-from tiacore_lib.pydantic_models.clean_model import CleanableBaseModel
+from tiacore_lib.pydantic_models.clean_model import BaseModel
 from tiacore_lib.utils.validate_helpers import normalize_form_field
 
 
-class ContractFileCreateSchema(CleanableBaseModel):
+class ContractFileCreateSchema(BaseModel):
     file: UploadFile
     contract_id: UUID
 
@@ -24,7 +24,7 @@ class ContractFileCreateSchema(CleanableBaseModel):
         )
 
 
-class ContractFileEditSchema(CleanableBaseModel):
+class ContractFileEditSchema(BaseModel):
     file: Optional[UploadFile] = None
     contract_id: Optional[UUID] = None
 
@@ -40,7 +40,7 @@ class ContractFileEditSchema(CleanableBaseModel):
         )
 
 
-class ContractFileSchema(CleanableBaseModel):
+class ContractFileSchema(BaseModel):
     contract_file_id: UUID = Field(...)
     contract_file_name: str = Field(...)
     contract_id: UUID = Field(...)
@@ -55,11 +55,11 @@ class ContractFileSchema(CleanableBaseModel):
         populate_by_name = True
 
 
-class ContractFileResponseSchema(CleanableBaseModel):
+class ContractFileResponseSchema(BaseModel):
     contract_file_id: UUID
 
 
-class ContractFileListResponseSchema(CleanableBaseModel):
+class ContractFileListResponseSchema(BaseModel):
     total: int
     contract_files: List[ContractFileSchema]
 
