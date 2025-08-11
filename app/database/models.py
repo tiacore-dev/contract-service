@@ -15,7 +15,7 @@ class ContractType(Model):
 
 class Contract(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    price_set_id = fields.UUIDField(null=True)
+    price_set_id = fields.UUIDField()
     number = fields.CharField(max_length=255)
     name = fields.CharField(max_length=255)
     date = fields.DateField()

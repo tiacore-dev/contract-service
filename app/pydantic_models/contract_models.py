@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 class ContractCreateSchema(BaseModel):
     name: str = Field(..., min_length=3, max_length=100, alias="contract_name")
     number: str = Field(..., alias="contract_number")
-    price_set_id: Optional[UUID] = Field(None)
+    price_set_id: UUID = Field(...)
     date: datetime.date = Field(...)
     buyer_id: UUID = Field(...)
     seller_id: UUID = Field(...)
@@ -42,7 +42,7 @@ class ContractSchema(BaseModel):
     id: UUID = Field(..., alias="contract_id")
     name: str = Field(..., alias="contract_name")
     number: str = Field(..., alias="contract_number")
-    price_set_id: Optional[UUID] = Field(None)
+    price_set_id: UUID = Field(...)
     date: datetime.date = Field(...)
     buyer_id: UUID = Field(...)
     seller_id: UUID = Field(...)
