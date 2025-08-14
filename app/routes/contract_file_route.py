@@ -195,7 +195,7 @@ async def download_contract_file(
     contract_file_id: UUID,
     context=Depends(require_permission_in_context("download_contract_file")),
 ):
-    contract_file = await ContractFile.filter(id=contract_file_id).first()
+    contract_file = await ContractFile.filter(id=contract_file_id).prefetch_related("contract").first()
     if not contract_file:
         raise HTTPException(status_code=404, detail="Файл контракта не найден")
     validate_company_access(contract_file.contract, context, "файлом контракта")
