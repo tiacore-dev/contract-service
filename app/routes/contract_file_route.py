@@ -149,8 +149,8 @@ async def get_contract_files(
     context=Depends(require_permission_in_context("get_all_contract_files")),
 ):
     query = Q()
-    if filters["company_id"]:
-        query = Q(company_id=filters["company_id"])
+    if context.get("company_id"):
+        query = Q(company_id=context.get("company_id"))
     if filters.get("contract_file_name"):
         query &= Q(name__icontains=filters["contract_file_name"])
     if filters.get("description"):
