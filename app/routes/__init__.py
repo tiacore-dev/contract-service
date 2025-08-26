@@ -6,6 +6,7 @@ from .contract_file_route import contract_file_router
 from .contract_route import contract_router
 from .contract_type_route import contract_type_router
 from .entity_company_relation_route import entity_relation_router
+from .entity_route import legal_entity_router
 from .legal_entity_route import entity_router
 from .monitoring_route import monitoring_router
 
@@ -23,3 +24,4 @@ def register_routes(app: FastAPI):
         prefix="/api/entity-company-relations",
         tags=["EntityCompanyRelations"],
     )
+    app.include_router(legal_entity_router, prefix="/api/get-company-ids", tags=["GetIDs"])
