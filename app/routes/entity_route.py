@@ -3,11 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request
 from tiacore_lib.config import get_settings
 from tiacore_lib.handlers.auth_handler import get_current_user
-from tiacore_lib.http.http_client import SharedHttpClient, get_auth_headers
+from tiacore_lib.http.http_client import SharedHttpClient
 
-from app.database.models import (
-    Contract,
-)
+from app.database.models import Contract, EntityCompanyRelation
 from app.pydantic_models.entity_models import (
     EntitySchema,
 )
@@ -27,20 +25,13 @@ async def get_ids(
     context: dict = Depends(get_current_user),
     settings=Depends(get_settings),
 ):
-    headers = get_auth_headers(request)
-
     contract = await Contract.filter(id=contract_id).first()
     if not contract:
         raise HTTPException(status_code=404, detail="контракт не найден")
 
-    seller, status_code = await http_client.request(
-        "GET",
-        f"{settings.REFERENCE_URL}/api/legal-entities/{contract.seller_id}",
-        headers=headers,
+    sellers = await EntityCompanyRelation.filter(legal_entity_id=contract.seller_id, relation_type="seller").all()
+    buyers = await EntityCompanyRelation.filter(legal_entity_id=contract.buyer_id, relation_type="buyer").all()
+    return EntitySchema(
+        seller_company_ids=[seller.company_id for seller in sellers],
+        buyer_company_ids=[buyer.company_id for buyer in buyers],
     )
-    buyer, status_code = await http_client.request(
-        "GET",
-        f"{settings.REFERENCE_URL}/api/legal-entities/{contract.buyer_id}",
-        headers=headers,
-    )
-    return EntitySchema(seller_company_id=seller["company_id"], buyer_company_id=buyer["company_id"])
