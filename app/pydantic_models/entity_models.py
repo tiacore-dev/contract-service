@@ -6,7 +6,6 @@ from tiacore_lib.enums import ServiceType
 
 
 class GetPriceIDSchema(BaseModel):
-    price_set_id: UUID
     sender_city_id: UUID
     recipient_city_id: UUID
     sender_warehouse_id: Optional[UUID] = Field(None)

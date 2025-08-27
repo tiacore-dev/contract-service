@@ -31,13 +31,16 @@ async def get_ids(
     sellers = await EntityCompanyRelation.filter(legal_entity_id=contract.seller_id, relation_type="seller").all()
     buyers = await EntityCompanyRelation.filter(legal_entity_id=contract.buyer_id, relation_type="buyer").all()
 
+    price_data = data.model_dump(mode="json")
+    price_data["price_set_id"] = str(contract.price_set_id)
     headers = get_auth_headers(request)
     response_data, status_code = await http_client.request(
         "POST",
         f"{settings.PRICE_URL}/api/get-price-id",
         headers=headers,
-        json=data.model_dump(mode="json", exclude={"relation_type"}),
+        json=price_data,
     )
+
     return EntitySchema(
         seller_company_ids=[seller.company_id for seller in sellers],
         buyer_company_ids=[buyer.company_id for buyer in buyers],
