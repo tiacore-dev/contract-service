@@ -24,6 +24,7 @@ class BaseConfig(SharedBaseConfig):
 
     AUTH_BROKER_URL: str = ""
     REFERENCE_URL: str = ""
+    PRICE_URL: str = ""
 
     class Config:
         env_file = ".env"
@@ -49,6 +50,7 @@ class TestConfig(SharedTestConfig):
     FOLDER_ID: str = ""
     AUTH_BROKER_URL: str = ""
     REFERENCE_URL: str = ""
+    PRICE_URL: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env.test",
